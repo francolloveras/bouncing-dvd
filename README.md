@@ -1,4 +1,4 @@
-![Demo picture](https://bouncing-q9vtmqwrf-francolloveras-project.vercel.app/demo.png)
+![Demo picture](https://francolloveras.com/bouncing-dvd/demo.png)
 
 # The funniest thing ever made
 
