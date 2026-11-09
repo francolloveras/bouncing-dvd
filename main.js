@@ -1,19 +1,19 @@
 // Util function to create confetti using js-confetti: https://www.npmjs.com/package/js-confetti
-const jsConfetti = new JSConfetti();
+const jsConfetti = new JSConfetti()
 
 // Get the canvas element and the canvas context.
-const canvas = document.getElementById("canvas");
-const context = canvas.getContext("2d");
-
-// Get window height and width size.
-const windowHeight = window.innerHeight;
-const windowWidth = window.innerWidth;
+const canvas = document.getElementById('canvas')
+const context = canvas.getContext('2d')
 
 // Set canvas height and width taking the window size.
-canvas.height = windowHeight;
-canvas.width = windowWidth;
+const resizeCanvas = () => {
+  canvas.height = window.innerHeight
+  canvas.width = window.innerWidth
+}
 
-canvas.style.background = "#000";
+resizeCanvas()
+
+canvas.style.background = '#000'
 
 // DVD svg paths.
 const svg = `
@@ -42,89 +42,102 @@ const svg = `
   s-223.79-70.84-499.83-70.84 zm-18.094 48.627 
   c63.04 0 114.13 10.573 114.13 23.613 s-51.095 23.613-114.13 23.613 
   c-63.027 0-114.13-10.573-114.13-23.613 s51.106-23.613 114.13-23.613 
-`;
-const svgWidth = 1058.4;
-const svgHeight = 465.84;
+`
+const svgWidth = 1058.4
+const svgHeight = 465.84
 
 // Generate random hex color code util function
 const getRandomHexColor = () => {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
+  const letters = '0123456789ABCDEF'
+  let color = '#'
   for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
+    color += letters[Math.floor(Math.random() * 16)]
   }
-  return color;
-};
+  return color
+}
 
 // Create the DVD class.
 class DVD {
   constructor({ context, svg, x, y, speed, width, height, color }) {
-    this.context = context;
-    this.svg = new Path2D(svg);
-    this.x = x;
-    this.y = y;
-    this.speed = speed;
-    this.width = width;
-    this.height = height;
-    this.color = color;
+    this.context = context
+    this.svg = new Path2D(svg)
+    this.x = x
+    this.y = y
+    this.speed = speed
+    this.width = width
+    this.height = height
+    this.color = color
 
-    this.dx = 1 * this.speed;
-    this.dy = 1 * this.speed;
+    this.dx = 1 * this.speed
+    this.dy = 1 * this.speed
 
     // Bind animate method to the instance.
-    this.animate = this.animate.bind(this);
+    this.animate = this.animate.bind(this)
   }
 
   draw() {
     // Clear the previous draw.
-    this.context.clearRect(0, 0, windowWidth, windowHeight);
+    this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height)
 
-    this.context.save();
-    this.context.scale(this.width / svgWidth, this.height / svgHeight);
-    this.context.fillStyle = this.color;
-    this.context.translate(
-      this.x * (svgWidth / this.width),
-      this.y * (svgHeight / this.height)
-    );
-    this.context.fill(this.svg);
-    this.context.restore();
+    this.context.save()
+    this.context.scale(this.width / svgWidth, this.height / svgHeight)
+    this.context.fillStyle = this.color
+    this.context.translate(this.x * (svgWidth / this.width), this.y * (svgHeight / this.height))
+    this.context.fill(this.svg)
+    this.context.restore()
+  }
+
+  resize() {
+    const maxX = Math.max(0, this.context.canvas.width - this.width)
+    const maxY = Math.max(0, this.context.canvas.height - this.height)
+
+    if (this.x > maxX) {
+      this.x = maxX
+      this.dx = -Math.abs(this.dx)
+    }
+
+    if (this.y > maxY) {
+      this.y = maxY
+      this.dy = -Math.abs(this.dy)
+    }
   }
 
   update() {
-    this.x += this.dx;
-    this.y += this.dy;
+    this.x += this.dx
+    this.y += this.dy
 
-    const newColor = getRandomHexColor();
+    const newColor = getRandomHexColor()
+    const { width, height } = this.context.canvas
 
     // Check if the draw is bouncing off the edges.
-    if (this.x + this.width > windowWidth || this.x < 0) {
-      this.color = newColor;
-      this.dx = -this.dx;
+    if (this.x + this.width > width || this.x < 0) {
+      this.color = newColor
+      this.dx = -this.dx
     }
 
-    if (this.y + this.height > windowHeight || this.y < 0) {
-      this.color = newColor;
-      this.dy = -this.dy;
+    if (this.y + this.height > height || this.y < 0) {
+      this.color = newColor
+      this.dy = -this.dy
     }
 
     if (
       (this.x < 0 && this.y < 0) ||
-      (this.x + this.width > windowWidth && this.y < 0) ||
-      (this.x < 0 && this.y + this.height > windowHeight) ||
-      (this.x + this.width > windowWidth && this.y + this.height > windowHeight)
+      (this.x + this.width > width && this.y < 0) ||
+      (this.x < 0 && this.y + this.height > height) ||
+      (this.x + this.width > width && this.y + this.height > height)
     ) {
-      jsConfetti.addConfetti();
+      jsConfetti.addConfetti()
     }
   }
 
   animate() {
-    requestAnimationFrame(this.animate);
-    this.draw();
-    this.update();
+    requestAnimationFrame(this.animate)
+    this.draw()
+    this.update()
   }
 }
 
-new DVD({
+const dvd = new DVD({
   svg,
   context,
   x: 0,
@@ -132,5 +145,12 @@ new DVD({
   speed: 3,
   width: 320,
   height: 141,
-  color: "#fff",
-}).animate();
+  color: '#fff',
+})
+
+window.addEventListener('resize', () => {
+  resizeCanvas()
+  dvd.resize()
+})
+
+dvd.animate()
